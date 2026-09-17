@@ -1,5 +1,5 @@
 if (!process.env.DATABASE_URL) {
-  process.env.DATABASE_URL = "file:./dev.db";
+  process.env.DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/neondb?sslmode=require";
 }
 
 import { PrismaClient } from "@prisma/client";
