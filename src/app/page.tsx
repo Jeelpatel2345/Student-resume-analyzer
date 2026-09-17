@@ -30,24 +30,24 @@ export default function HomePage() {
             <span>AI Resume Intelligence & International Job Discovery</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-white mb-5 leading-tight">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-white mb-4 sm:mb-5 leading-tight">
             Optimize Your Resume. <br />
             <span className="bg-gradient-to-r from-blue-400 via-indigo-300 to-cyan-400 bg-clip-text text-transparent">
               Land Global Roles in USA, Canada & UK.
             </span>
           </h1>
 
-          <p className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+          <p className="text-sm sm:text-base md:text-lg text-slate-400 max-w-2xl mx-auto mb-8 sm:mb-10 leading-relaxed px-2">
             Upload your resume to get instant ATS scoring, bullet-by-bullet quantifiable rewrites, missing keyword alerts, and real-time job matches at top international companies hiring worldwide.
           </p>
 
           {/* Interactive Uploader */}
-          <div className="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl shadow-blue-500/5 mb-12">
+          <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl sm:rounded-3xl p-4 sm:p-8 backdrop-blur-xl shadow-2xl shadow-blue-500/5 mb-8 sm:mb-12">
             <ResumeUploader />
           </div>
 
           {/* Highlights Bar */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto text-left">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto text-left">
             <div className="p-4 rounded-2xl bg-slate-900/40 border border-slate-800/60">
               <div className="flex items-center gap-2 text-blue-400 mb-1">
                 <Globe className="w-4 h-4" />

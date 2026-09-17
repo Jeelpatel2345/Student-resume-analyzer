@@ -10,9 +10,19 @@
 body {
   color: var(--foreground);
   background: var(--background);
+  overflow-x: hidden;
 }
 
-/* Custom modern scrollbar */
+/* Hide scrollbar for clean mobile tabs & chips */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Custom modern scrollbar for desktop */
 ::-webkit-scrollbar {
   width: 7px;
   height: 7px;

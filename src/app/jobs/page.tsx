@@ -128,30 +128,30 @@ export default function JobsPage() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 pb-24">
       {/* Header Banner */}
-      <section className="border-b border-slate-800/80 bg-slate-900/40 py-8 px-4 sm:px-6 lg:px-8">
+      <section className="border-b border-slate-800/80 bg-slate-900/40 py-6 sm:py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-xs font-semibold text-blue-400 mb-2">
-                <Globe className="w-3.5 h-3.5" />
-                <span>Global Hiring Opportunities Outside India</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[11px] text-emerald-400">Live Active Feeds</span>
+                <Globe className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Global Hiring Opportunities</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                <span className="text-[11px] text-emerald-400">Live</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                International Tech Jobs & Live Hiring Companies
+                International Tech Jobs & Hiring Companies
               </h1>
-              <p className="text-sm text-slate-400 mt-1">
-                Explore openings across USA 🇺🇸, Canada 🇨🇦, UK 🇬🇧, Europe 🇪🇺, and Remote matched directly with your parsed skills.
+              <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                Explore openings across USA 🇺🇸, Canada 🇨🇦, UK 🇬🇧, Europe 🇪🇺, and Remote matched directly with your tech stack.
               </p>
             </div>
 
             {candidateSkills.length > 0 && (
-              <div className="p-3 rounded-2xl bg-blue-950/40 border border-blue-800/40 text-xs max-w-sm">
+              <div className="w-full md:w-auto p-3 rounded-2xl bg-blue-950/40 border border-blue-800/40 text-xs max-w-sm">
                 <span className="text-blue-300 font-semibold block mb-1">
-                  Matched with your parsed resume:
+                  Matched with parsed resume:
                 </span>
-                <span className="text-slate-300">
+                <span className="text-slate-300 break-words">
                   {candidateSkills.slice(0, 5).join(", ")} {candidateSkills.length > 5 && `+${candidateSkills.length - 5} more`}
                 </span>
               </div>
@@ -159,20 +159,20 @@ export default function JobsPage() {
           </div>
 
           {/* Search bar & Visa Toggle */}
-          <div className="flex flex-col md:flex-row items-stretch gap-3 mb-4">
+          <div className="flex flex-col sm:flex-row items-stretch gap-2.5 sm:gap-3 mb-4">
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Search job title, company name, or technology (e.g. React, Stripe, DevOps, Intern)..."
+                placeholder="Search title, company, or tech (e.g. React, Stripe, DevOps)..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs sm:text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 p-1"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -182,21 +182,21 @@ export default function JobsPage() {
             {/* Visa Sponsored toggle */}
             <button
               onClick={() => setVisaSponsoredOnly(!visaSponsoredOnly)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold border transition-all ${
+              className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold border transition-all ${
                 visaSponsoredOnly
                   ? "bg-purple-600/20 border-purple-500/40 text-purple-300 shadow"
                   : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
               }`}
             >
-              <Plane className="w-4 h-4 text-purple-400" />
+              <Plane className="w-4 h-4 text-purple-400 shrink-0" />
               <span>Visa Sponsored Only</span>
             </button>
           </div>
 
           {/* Advanced Multi-Filters Toolbar */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-2.5 pt-2 border-t border-slate-800/60">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 pt-3 border-t border-slate-800/60">
             {/* Date Posted Filter */}
-            <div className="relative">
+            <div>
               <label className="block text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
                 <Clock className="w-3 h-3 text-blue-400" />
                 <span>Date Posted</span>
@@ -204,7 +204,7 @@ export default function JobsPage() {
               <select
                 value={selectedDatePosted}
                 onChange={(e) => setSelectedDatePosted(e.target.value)}
-                className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+                className="w-full px-2.5 py-2 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
               >
                 <option value="ALL">Any Time</option>
                 <option value="24h">Past 24 Hours</option>
@@ -214,7 +214,7 @@ export default function JobsPage() {
             </div>
 
             {/* Experience Level Filter */}
-            <div className="relative">
+            <div>
               <label className="block text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
                 <UserCheck className="w-3 h-3 text-amber-400" />
                 <span>Experience Level</span>
@@ -222,7 +222,7 @@ export default function JobsPage() {
               <select
                 value={selectedExperienceLevel}
                 onChange={(e) => setSelectedExperienceLevel(e.target.value)}
-                className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+                className="w-full px-2.5 py-2 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
               >
                 <option value="ALL">All Experience</option>
                 <option value="entry">Entry Level (0-2 yrs)</option>
@@ -233,7 +233,7 @@ export default function JobsPage() {
             </div>
 
             {/* Workplace Location Model */}
-            <div className="relative">
+            <div>
               <label className="block text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
                 <MapPin className="w-3 h-3 text-emerald-400" />
                 <span>Workplace Model</span>
@@ -241,7 +241,7 @@ export default function JobsPage() {
               <select
                 value={selectedWorkType}
                 onChange={(e) => setSelectedWorkType(e.target.value)}
-                className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+                className="w-full px-2.5 py-2 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
               >
                 <option value="ALL">All Workplace Models</option>
                 <option value="Remote">Remote Only</option>
@@ -251,7 +251,7 @@ export default function JobsPage() {
             </div>
 
             {/* Employment Type */}
-            <div className="relative">
+            <div>
               <label className="block text-[11px] font-semibold text-slate-400 mb-1 flex items-center gap-1">
                 <Briefcase className="w-3 h-3 text-cyan-400" />
                 <span>Job Type</span>
@@ -259,7 +259,7 @@ export default function JobsPage() {
               <select
                 value={selectedEmploymentType}
                 onChange={(e) => setSelectedEmploymentType(e.target.value)}
-                className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+                className="w-full px-2.5 py-2 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
               >
                 <option value="ALL">All Job Types</option>
                 <option value="Full-time">Full-time</option>
@@ -270,25 +270,25 @@ export default function JobsPage() {
             </div>
 
             {/* Reset button if filters active */}
-            <div className="flex items-end col-span-2 sm:col-span-4 lg:col-span-1">
+            <div className="flex items-end">
               {hasActiveFilters ? (
                 <button
                   onClick={resetFilters}
-                  className="w-full flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors"
+                  className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 font-medium transition-colors"
                 >
                   <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Reset All</span>
+                  <span>Reset All Filters</span>
                 </button>
               ) : (
-                <div className="hidden lg:block text-[11px] text-slate-500 self-center">
-                  Filters ready
+                <div className="hidden lg:block text-[11px] text-slate-500 self-center text-center w-full">
+                  All filters default
                 </div>
               )}
             </div>
           </div>
 
-          {/* Country Tabs */}
-          <div className="flex items-center gap-2 mt-4 overflow-x-auto pb-1">
+          {/* Country Tabs (Scrollable on mobile) */}
+          <div className="flex items-center gap-1.5 sm:gap-2 mt-4 overflow-x-auto pb-1 scrollbar-none">
             {[
               { id: "ALL", label: "🌍 All Markets" },
               { id: "USA", label: "🇺🇸 United States" },
@@ -300,7 +300,7 @@ export default function JobsPage() {
               <button
                 key={tab.id}
                 onClick={() => setSelectedCountry(tab.id)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all shrink-0 ${
                   selectedCountry === tab.id
                     ? "bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20"
                     : "bg-slate-900/80 text-slate-400 hover:text-slate-200 border border-slate-800"
@@ -316,57 +316,57 @@ export default function JobsPage() {
       {/* Content Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         {/* View Mode Toggle: Jobs vs Companies */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <div className="flex items-center gap-2 p-1 rounded-xl bg-slate-900 border border-slate-800 self-start">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-900 border border-slate-800 w-full sm:w-auto">
             <button
               onClick={() => setViewMode("jobs")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
                 viewMode === "jobs"
                   ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
                   : "text-slate-400 hover:text-white"
               }`}
             >
               <Briefcase className="w-4 h-4" />
-              <span>Matching Jobs ({filteredJobs.length})</span>
+              <span>Jobs ({filteredJobs.length})</span>
             </button>
 
             <button
               onClick={() => setViewMode("companies")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all ${
                 viewMode === "companies"
                   ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
                   : "text-slate-400 hover:text-white"
               }`}
             >
               <Building2 className="w-4 h-4 text-emerald-400" />
-              <span>Hiring Companies ({filteredCompanies.length})</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Companies ({filteredCompanies.length})</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
             </button>
           </div>
 
-          <div className="text-xs text-slate-400">
-            Verified sources: LinkedIn • RemoteOK • Indeed • Direct ATS
+          <div className="text-[11px] sm:text-xs text-slate-400 text-center sm:text-right">
+            Verified: LinkedIn • RemoteOK • Indeed • Direct ATS
           </div>
         </div>
 
         {loading ? (
-          <div className="py-24 text-center">
+          <div className="py-20 text-center">
             <Loader2 className="w-8 h-8 text-blue-400 animate-spin mx-auto mb-3" />
             <p className="text-sm text-slate-400">
-              Querying real-time jobs & actively hiring companies...
+              Querying live jobs & actively hiring companies...
             </p>
           </div>
         ) : viewMode === "jobs" ? (
           filteredJobs.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {filteredJobs.map((job) => (
                 <JobCard key={job.id} job={job} />
               ))}
             </div>
           ) : (
-            <div className="rounded-3xl bg-slate-900/40 border border-slate-800 p-12 text-center max-w-xl mx-auto">
+            <div className="rounded-3xl bg-slate-900/40 border border-slate-800 p-8 sm:p-12 text-center max-w-xl mx-auto">
               <Globe className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-              <h3 className="text-lg font-bold text-white mb-2">No Jobs Match These Filters</h3>
+              <h3 className="text-base sm:text-lg font-bold text-white mb-2">No Jobs Match These Filters</h3>
               <p className="text-xs text-slate-400 mb-6">
                 Try widening your date range (e.g. past month or any time) or experience level to find more opportunities.
               </p>
@@ -381,15 +381,15 @@ export default function JobsPage() {
         ) : (
           /* Companies View */
           filteredCompanies.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {filteredCompanies.map((company) => (
                 <CompanyCard key={company.company} company={company} />
               ))}
             </div>
           ) : (
-            <div className="rounded-3xl bg-slate-900/40 border border-slate-800 p-12 text-center max-w-xl mx-auto">
+            <div className="rounded-3xl bg-slate-900/40 border border-slate-800 p-8 sm:p-12 text-center max-w-xl mx-auto">
               <Building2 className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-              <h3 className="text-lg font-bold text-white mb-2">No Companies Found</h3>
+              <h3 className="text-base sm:text-lg font-bold text-white mb-2">No Companies Found</h3>
               <p className="text-xs text-slate-400 mb-6">
                 No hiring companies match the selected criteria. Try resetting filters.
               </p>

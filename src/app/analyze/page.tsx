@@ -210,10 +210,10 @@ export default function AnalyzePage() {
           </div>
 
           {/* Quick Actions */}
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto shrink-0">
             <button
               onClick={handleSendToBuilder}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-semibold shadow-md shadow-blue-500/20 transition-all hover:scale-102"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-semibold shadow-md shadow-blue-500/20 transition-all hover:scale-101"
             >
               <Edit3 className="w-4 h-4" />
               <span>Edit in Resume Builder</span>
@@ -223,7 +223,7 @@ export default function AnalyzePage() {
                 sessionStorage.removeItem("last_analysis");
                 window.location.reload();
               }}
-              className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-medium border border-slate-700 transition-colors"
+              className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-medium border border-slate-700 transition-colors"
             >
               <RefreshCw className="w-4 h-4" />
               <span>Scan New</span>
@@ -425,7 +425,7 @@ export default function AnalyzePage() {
               )}
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
               {/* Date Posted */}
               <div>
                 <label className="block text-[11px] font-medium text-slate-400 mb-1 flex items-center gap-1">

@@ -12,7 +12,8 @@ import {
   Eye,
   CheckCircle2,
   Printer,
-  ChevronDown
+  ChevronDown,
+  Edit3
 } from "lucide-react";
 
 interface ExperienceItem {
@@ -34,6 +35,7 @@ interface EducationItem {
 export default function BuilderPage() {
   const resumePrintRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
+  const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
 
   // Resume form state
   const [name, setName] = useState("Alex Rivera");
@@ -222,7 +224,7 @@ export default function BuilderPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-start">
             {/* Template Selector */}
             <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 p-1 rounded-xl text-xs">
               <button
@@ -247,20 +249,42 @@ export default function BuilderPage() {
             <button
               onClick={handleDownloadPDF}
               disabled={downloading}
-              className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white text-xs sm:text-sm font-bold shadow-lg shadow-emerald-500/20 transition-all hover:scale-102"
+              className="flex items-center gap-2 px-4 sm:px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white text-xs sm:text-sm font-bold shadow-lg shadow-emerald-500/20 transition-all hover:scale-101"
             >
               <Download className="w-4 h-4" />
-              <span>{downloading ? "Exporting PDF..." : "Download ATS PDF"}</span>
+              <span>{downloading ? "Exporting..." : "Download ATS PDF"}</span>
             </button>
           </div>
         </div>
       </section>
 
       {/* Main Builder Grid: Editor on Left, Live Preview on Right */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8">
+        {/* Mobile View Toggle */}
+        <div className="lg:hidden flex items-center p-1 rounded-xl bg-slate-900 border border-slate-800 mb-6 w-full">
+          <button
+            onClick={() => setMobileTab("edit")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition-all ${
+              mobileTab === "edit" ? "bg-blue-600 text-white shadow-md shadow-blue-500/20" : "text-slate-400 hover:text-white"
+            }`}
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            <span>Edit Form</span>
+          </button>
+          <button
+            onClick={() => setMobileTab("preview")}
+            className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition-all ${
+              mobileTab === "preview" ? "bg-blue-600 text-white shadow-md shadow-blue-500/20" : "text-slate-400 hover:text-white"
+            }`}
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>Live Preview (A4)</span>
+          </button>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* LEFT: Editor Form */}
-          <div className="lg:col-span-6 space-y-6">
+          <div className={`lg:col-span-6 space-y-6 ${mobileTab !== "edit" ? "hidden lg:block" : ""}`}>
             {/* Personal Details */}
             <div className="rounded-2xl bg-slate-900/70 border border-slate-800 p-5 space-y-4">
               <h2 className="text-sm font-bold text-white uppercase tracking-wider text-blue-400">
@@ -515,12 +539,12 @@ export default function BuilderPage() {
           </div>
 
           {/* RIGHT: Live A4 Formatted Document Preview */}
-          <div className="lg:col-span-6">
+          <div className={`lg:col-span-6 ${mobileTab !== "preview" ? "hidden lg:block" : ""}`}>
             <div className="sticky top-32">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
                   <Eye className="w-3.5 h-3.5 text-blue-400" />
-                  <span>Real-time ATS Standard Preview (A4 Formatted)</span>
+                  <span>Real-time ATS Preview</span>
                 </span>
                 <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3" />
@@ -531,7 +555,7 @@ export default function BuilderPage() {
               {/* A4 Document Paper Container */}
               <div
                 ref={resumePrintRef}
-                className="bg-white text-slate-900 rounded-lg shadow-2xl p-8 min-h-[750px] font-sans text-left border border-slate-200"
+                className="bg-white text-slate-900 rounded-lg shadow-2xl p-4 sm:p-8 min-h-[650px] sm:min-h-[750px] font-sans text-left border border-slate-200 overflow-x-auto"
               >
                 {/* Header */}
                 <div className="border-b-2 border-slate-800 pb-3 mb-4 text-center">
