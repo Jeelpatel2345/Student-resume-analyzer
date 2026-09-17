@@ -1,0 +1,58 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Resume {
+  id              String           @id @default(uuid())
+  candidateName   String?
+  email           String?
+  phone           String?
+  location        String?
+  targetRole      String?
+  rawText         String
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  analyses        AnalysisResult[]
+  savedJobs       SavedJob[]
+}
+
+model AnalysisResult {
+  id              String   @id @default(uuid())
+  resumeId        String
+  resume          Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  overallScore    Int
+  skillsScore     Int
+  experienceScore Int
+  educationScore  Int
+  formattingScore Int
+  extractedSkills String   // JSON array of strings
+  missingSkills   String   // JSON array of strings
+  strengths       String   // JSON array of strings
+  weaknesses      String   // JSON array of strings
+  bulletCritique  String   // JSON array of { original: string, improved: string, reason: string }
+  educationData   String   // JSON array of { institution: string, degree: string, year: string }
+  experienceData  String   // JSON array of { company: string, role: string, duration: string, bullets: string[] }
+  createdAt       DateTime @default(now())
+}
+
+model SavedJob {
+  id            String   @id @default(uuid())
+  resumeId      String?
+  resume        Resume?  @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  title         String
+  company       String
+  location      String
+  country       String
+  salary        String?
+  applyUrl      String
+  matchScore    Int
+  matchedSkills String   // JSON array
+  source        String
+  isSaved       Boolean  @default(false)
+  createdAt     DateTime @default(now())
+}
