@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { JobCard } from "@/components/JobCard";
 import { CompanyCard } from "@/components/CompanyCard";
-import { JobOpportunity, CompanySpotlight } from "@/lib/jobs";
+import { JobOpportunity, CompanySpotlight, POPULAR_LOCATIONS } from "@/lib/jobs";
 import {
   Globe,
   Search,
@@ -30,6 +30,9 @@ export default function JobsPage() {
 
   // Filters
   const [selectedCountry, setSelectedCountry] = useState<string>("ALL");
+  const [selectedLocation, setSelectedLocation] = useState<string>("ALL");
+  const [locationInput, setLocationInput] = useState<string>("");
+  const [selectedSkill, setSelectedSkill] = useState<string>("ALL");
   const [selectedWorkType, setSelectedWorkType] = useState<string>("ALL");
   const [selectedEmploymentType, setSelectedEmploymentType] = useState<string>("ALL");
   const [selectedExperienceLevel, setSelectedExperienceLevel] = useState<string>("ALL");
@@ -48,12 +51,29 @@ export default function JobsPage() {
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
-        if (parsed.parsed?.skills) {
+        if (parsed.parsed?.skills && parsed.parsed.skills.length > 0) {
           setCandidateSkills(parsed.parsed.skills);
         }
       } catch (e) {}
     }
   }, []);
+
+  const displayedSkills = React.useMemo(() => {
+    if (candidateSkills.length > 0) return candidateSkills;
+    return ["React", "TypeScript", "Python", "Node.js", "AWS", "PostgreSQL", "Docker", "Machine Learning", "Go", "GraphQL", "Kubernetes", "Next.js"];
+  }, [candidateSkills]);
+
+  const skillCounts = React.useMemo(() => {
+    const counts: Record<string, number> = {};
+    displayedSkills.forEach(skill => {
+      const target = skill.toLowerCase();
+      counts[skill] = jobs.filter(j =>
+        j.requiredSkills.some(s => s.toLowerCase().includes(target) || target.includes(s.toLowerCase())) ||
+        j.matchedSkills.some(s => s.toLowerCase().includes(target) || target.includes(s.toLowerCase()))
+      ).length;
+    });
+    return counts;
+  }, [displayedSkills, jobs]);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -61,6 +81,9 @@ export default function JobsPage() {
       try {
         const params = new URLSearchParams();
         if (selectedCountry !== "ALL") params.append("country", selectedCountry);
+        const loc = locationInput.trim() || (selectedLocation !== "ALL" ? selectedLocation : "");
+        if (loc) params.append("location", loc);
+        if (selectedSkill !== "ALL") params.append("skill", selectedSkill);
         if (selectedWorkType !== "ALL") params.append("workType", selectedWorkType);
         if (selectedEmploymentType !== "ALL") params.append("employmentType", selectedEmploymentType);
         if (selectedExperienceLevel !== "ALL") params.append("experienceLevel", selectedExperienceLevel);
@@ -90,6 +113,9 @@ export default function JobsPage() {
     return () => clearTimeout(timer);
   }, [
     selectedCountry,
+    selectedLocation,
+    locationInput,
+    selectedSkill,
     selectedWorkType,
     selectedEmploymentType,
     selectedExperienceLevel,
@@ -108,6 +134,9 @@ export default function JobsPage() {
 
   const resetFilters = () => {
     setSelectedCountry("ALL");
+    setSelectedLocation("ALL");
+    setLocationInput("");
+    setSelectedSkill("ALL");
     setSelectedWorkType("ALL");
     setSelectedEmploymentType("ALL");
     setSelectedExperienceLevel("ALL");
@@ -118,6 +147,9 @@ export default function JobsPage() {
 
   const hasActiveFilters =
     selectedCountry !== "ALL" ||
+    selectedLocation !== "ALL" ||
+    locationInput.trim() !== "" ||
+    selectedSkill !== "ALL" ||
     selectedWorkType !== "ALL" ||
     selectedEmploymentType !== "ALL" ||
     selectedExperienceLevel !== "ALL" ||
@@ -158,8 +190,8 @@ export default function JobsPage() {
             )}
           </div>
 
-          {/* Search bar & Visa Toggle */}
-          <div className="flex flex-col sm:flex-row items-stretch gap-2.5 sm:gap-3 mb-4">
+          {/* Search bar, Location & Visa Toggle */}
+          <div className="flex flex-col md:flex-row items-stretch gap-2.5 sm:gap-3 mb-3">
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
@@ -179,18 +211,127 @@ export default function JobsPage() {
               )}
             </div>
 
+            {/* Location Input (e.g. Ontario, Canada, London, Berlin) */}
+            <div className="relative sm:w-72">
+              <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-400" />
+              <input
+                type="text"
+                placeholder="Location (e.g. Canada, Ontario, London)..."
+                value={locationInput}
+                onChange={(e) => {
+                  setLocationInput(e.target.value);
+                  setSelectedLocation("ALL");
+                }}
+                className="w-full pl-10 pr-9 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs sm:text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+              />
+              {locationInput && (
+                <button
+                  onClick={() => setLocationInput("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 p-1"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
             {/* Visa Sponsored toggle */}
             <button
               onClick={() => setVisaSponsoredOnly(!visaSponsoredOnly)}
-              className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold border transition-all ${
+              className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold border transition-all shrink-0 ${
                 visaSponsoredOnly
                   ? "bg-purple-600/20 border-purple-500/40 text-purple-300 shadow"
                   : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
               }`}
             >
               <Plane className="w-4 h-4 text-purple-400 shrink-0" />
-              <span>Visa Sponsored Only</span>
+              <span>Visa Sponsored</span>
             </button>
+          </div>
+
+          {/* Quick Location Chips */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none text-[11px] mb-3">
+            <span className="text-slate-400 font-semibold shrink-0">Quick Locations:</span>
+            {POPULAR_LOCATIONS.map((loc) => {
+              const active =
+                (loc.value === "ALL" && !locationInput && selectedLocation === "ALL") ||
+                selectedLocation.toLowerCase() === loc.value.toLowerCase() ||
+                locationInput.toLowerCase() === loc.value.toLowerCase();
+              return (
+                <button
+                  key={loc.value}
+                  onClick={() => {
+                    setSelectedLocation(loc.value);
+                    setLocationInput(loc.value === "ALL" ? "" : loc.value);
+                  }}
+                  className={`px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition-colors shrink-0 ${
+                    active
+                      ? "bg-emerald-600 text-white font-semibold shadow-sm"
+                      : "bg-slate-900/90 hover:bg-slate-800 text-slate-300 border border-slate-800"
+                  }`}
+                >
+                  {loc.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Interactive Skill Filtering Toolbar (JobsRight / HiringCafe style) */}
+          <div className="pt-2.5 border-t border-slate-800/60 mb-3">
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-300">
+                <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+                <span>Filter by Skills:</span>
+                <span className="text-[11px] text-slate-500 font-normal">
+                  (Click any skill to filter 100+ hiring companies & roles)
+                </span>
+              </div>
+              {selectedSkill !== "ALL" && (
+                <button
+                  onClick={() => setSelectedSkill("ALL")}
+                  className="text-[11px] text-blue-400 hover:underline flex items-center gap-1"
+                >
+                  <span>Show All Skills</span>
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button
+                onClick={() => setSelectedSkill("ALL")}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                  selectedSkill === "ALL"
+                    ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
+                    : "bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800"
+                }`}
+              >
+                All Tech ({jobs.length})
+              </button>
+              {displayedSkills.map((skill) => {
+                const count = skillCounts[skill] || 0;
+                const isSelected = selectedSkill.toLowerCase() === skill.toLowerCase();
+                return (
+                  <button
+                    key={skill}
+                    onClick={() => setSelectedSkill(isSelected ? "ALL" : skill)}
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                      isSelected
+                        ? "bg-blue-600 text-white font-bold shadow-md shadow-blue-500/30 scale-102"
+                        : "bg-slate-900 hover:bg-slate-800 hover:border-blue-500/40 text-slate-300 border border-slate-800"
+                    }`}
+                  >
+                    <span>{skill}</span>
+                    <span
+                      className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+                        isSelected ? "bg-white/20 text-white font-bold" : "bg-slate-800 text-slate-400"
+                      }`}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Advanced Multi-Filters Toolbar */}
@@ -383,7 +524,14 @@ export default function JobsPage() {
           filteredCompanies.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {filteredCompanies.map((company) => (
-                <CompanyCard key={company.company} company={company} />
+                <CompanyCard
+                  key={company.company}
+                  company={company}
+                  onSelectSimilarCompany={(simComp) => {
+                    setSearchQuery(simComp);
+                    setViewMode("companies");
+                  }}
+                />
               ))}
             </div>
           ) : (

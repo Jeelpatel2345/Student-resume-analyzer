@@ -8,7 +8,7 @@ import { JobCard } from "@/components/JobCard";
 import { CompanyCard } from "@/components/CompanyCard";
 import { ResumeUploader } from "@/components/ResumeUploader";
 import { SAMPLE_RESUMES } from "@/lib/sampleResumes";
-import { JobOpportunity, CompanySpotlight, getHiringCompanies } from "@/lib/jobs";
+import { JobOpportunity, CompanySpotlight, getHiringCompanies, POPULAR_LOCATIONS } from "@/lib/jobs";
 import {
   FileText,
   Globe,
@@ -32,7 +32,10 @@ import {
   UserCheck,
   RotateCcw,
   Filter,
-  MapPin
+  MapPin,
+  Search,
+  X,
+  Code2
 } from "lucide-react";
 
 export default function AnalyzePage() {
@@ -41,10 +44,13 @@ export default function AnalyzePage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"jobs" | "companies" | "checklist" | "skills" | "rewrites">("jobs");
   const [countryFilter, setCountryFilter] = useState<string>("ALL");
+  const [locationQuery, setLocationQuery] = useState<string>("");
+  const [selectedSkillFilter, setSelectedSkillFilter] = useState<string>("ALL");
   const [workTypeFilter, setWorkTypeFilter] = useState<string>("ALL");
   const [dateFilter, setDateFilter] = useState<string>("ALL");
   const [experienceFilter, setExperienceFilter] = useState<string>("ALL");
   const [employmentFilter, setEmploymentFilter] = useState<string>("ALL");
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   useEffect(() => {
     // 1. Check if session storage has analysis
@@ -124,21 +130,68 @@ export default function AnalyzePage() {
 
   const allJobs: JobOpportunity[] = jobs || [];
 
+  // Extract skills from parsed resume, or fallback to key tech in jobs
+  const candidateSkills: string[] =
+    parsed?.skills && parsed.skills.length > 0
+      ? parsed.skills
+      : Array.from(new Set(allJobs.slice(0, 20).flatMap(j => j.requiredSkills))).slice(0, 15);
+
+  // Compute live match count for each candidate skill across all catalog jobs
+  const skillCounts: Record<string, number> = {};
+  candidateSkills.forEach(skill => {
+    const target = skill.toLowerCase();
+    skillCounts[skill] = allJobs.filter(j =>
+      j.requiredSkills.some(s => s.toLowerCase().includes(target) || target.includes(s.toLowerCase())) ||
+      j.matchedSkills.some(s => s.toLowerCase().includes(target) || target.includes(s.toLowerCase()))
+    ).length;
+  });
+
   const filteredJobs = allJobs.filter((job: JobOpportunity) => {
     // 1. Country filter
     if (countryFilter !== "ALL") {
       if (countryFilter === "Remote" && job.workType !== "Remote") return false;
       if (countryFilter !== "Remote" && job.country.toLowerCase() !== countryFilter.toLowerCase()) return false;
     }
-    // 2. Workplace model
+    // 2. Specific Location Filter (City / Province / State / Country text, e.g. Ontario, Canada, London, Berlin)
+    if (locationQuery.trim()) {
+      const loc = locationQuery.toLowerCase().trim();
+      const matchLoc =
+        (job.stateProvince && job.stateProvince.toLowerCase().includes(loc)) ||
+        (job.city && job.city.toLowerCase().includes(loc)) ||
+        job.location.toLowerCase().includes(loc) ||
+        job.country.toLowerCase().includes(loc) ||
+        (loc === "remote" && job.workType === "Remote");
+      if (!matchLoc) return false;
+    }
+    // 3. Analyzed Skill Filter (e.g. React, Python, AWS, etc.)
+    if (selectedSkillFilter !== "ALL") {
+      const targetSkill = selectedSkillFilter.toLowerCase();
+      const hasSkill =
+        job.requiredSkills.some(s => s.toLowerCase().includes(targetSkill) || targetSkill.includes(s.toLowerCase())) ||
+        job.matchedSkills.some(s => s.toLowerCase().includes(targetSkill) || targetSkill.includes(s.toLowerCase()));
+      if (!hasSkill) return false;
+    }
+    // 4. Keyword / Company search query
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      const matchQuery =
+        job.title.toLowerCase().includes(q) ||
+        job.company.toLowerCase().includes(q) ||
+        job.requiredSkills.some(s => s.toLowerCase().includes(q)) ||
+        job.location.toLowerCase().includes(q) ||
+        (job.city && job.city.toLowerCase().includes(q)) ||
+        (job.stateProvince && job.stateProvince.toLowerCase().includes(q));
+      if (!matchQuery) return false;
+    }
+    // 5. Workplace model
     if (workTypeFilter !== "ALL" && job.workType.toLowerCase() !== workTypeFilter.toLowerCase()) {
       return false;
     }
-    // 3. Employment type
+    // 6. Employment type
     if (employmentFilter !== "ALL" && job.employmentType && job.employmentType.toLowerCase() !== employmentFilter.toLowerCase()) {
       return false;
     }
-    // 4. Experience level
+    // 7. Experience level
     if (experienceFilter !== "ALL" && job.experienceLevel) {
       const el = job.experienceLevel.toLowerCase();
       const ef = experienceFilter.toLowerCase();
@@ -147,7 +200,7 @@ export default function AnalyzePage() {
       if (ef.includes("senior") && !el.includes("senior")) return false;
       if ((ef.includes("lead") || ef.includes("staff")) && !(el.includes("lead") || el.includes("staff"))) return false;
     }
-    // 5. Date posted
+    // 8. Date posted
     if (dateFilter !== "ALL") {
       const hours = job.postedHoursAgo || 24;
       if (dateFilter === "24h" && hours > 24) return false;
@@ -161,18 +214,24 @@ export default function AnalyzePage() {
 
   const resetFilters = () => {
     setCountryFilter("ALL");
+    setLocationQuery("");
+    setSelectedSkillFilter("ALL");
     setWorkTypeFilter("ALL");
     setDateFilter("ALL");
     setExperienceFilter("ALL");
     setEmploymentFilter("ALL");
+    setSearchQuery("");
   };
 
   const hasActiveFilters =
     countryFilter !== "ALL" ||
+    locationQuery.trim() !== "" ||
+    selectedSkillFilter !== "ALL" ||
     workTypeFilter !== "ALL" ||
     dateFilter !== "ALL" ||
     experienceFilter !== "ALL" ||
-    employmentFilter !== "ALL";
+    employmentFilter !== "ALL" ||
+    searchQuery.trim() !== "";
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 pb-24">
@@ -403,14 +462,14 @@ export default function AnalyzePage() {
 
         {/* Global Filter Bar for Jobs & Companies */}
         {(activeTab === "jobs" || activeTab === "companies") && (
-          <div className="mb-6 p-4 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
+          <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-4 shadow-xl">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2 text-xs font-semibold text-slate-300">
                 <Filter className="w-3.5 h-3.5 text-blue-400" />
-                <span>Real-Time Filter Opportunities</span>
+                <span>Real-Time Job & Company Explorer</span>
                 {hasActiveFilters && (
-                  <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                    Filtered
+                  <span className="px-2 py-0.5 rounded-full text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 font-bold">
+                    Filtered ({filteredJobs.length} roles • {filteredCompanies.length} companies)
                   </span>
                 )}
               </div>
@@ -420,12 +479,133 @@ export default function AnalyzePage() {
                   className="flex items-center gap-1 text-[11px] text-blue-400 hover:text-blue-300 transition-colors"
                 >
                   <RotateCcw className="w-3 h-3" />
-                  <span>Reset filters</span>
+                  <span>Reset all filters</span>
                 </button>
               )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+            {/* Keyword Search & Location Inputs */}
+            <div className="flex flex-col sm:flex-row items-stretch gap-2.5">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search job title or company (e.g. Shopify, Stripe, Lead Frontend)..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-8 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs sm:text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 p-1"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* Specific Location Input (e.g. Ontario, Canada, London, Berlin) */}
+              <div className="relative sm:w-80">
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-400" />
+                <input
+                  type="text"
+                  placeholder="Filter location (e.g. Canada, Ontario, London, Berlin)..."
+                  value={locationQuery}
+                  onChange={(e) => setLocationQuery(e.target.value)}
+                  className="w-full pl-9 pr-8 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs sm:text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                />
+                {locationQuery && (
+                  <button
+                    onClick={() => setLocationQuery("")}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 p-1"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Popular Locations Quick Selector */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[11px]">
+              <span className="text-slate-400 font-semibold shrink-0">Quick Locations:</span>
+              {POPULAR_LOCATIONS.map((loc) => {
+                const isActive = (loc.value === "ALL" && !locationQuery) || locationQuery.toLowerCase() === loc.value.toLowerCase();
+                return (
+                  <button
+                    key={loc.value}
+                    onClick={() => setLocationQuery(loc.value === "ALL" ? "" : loc.value)}
+                    className={`px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition-colors shrink-0 ${
+                      isActive
+                        ? "bg-emerald-600 text-white font-semibold shadow-sm"
+                        : "bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800"
+                    }`}
+                  >
+                    {loc.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Interactive Analyzed Skill Filter Toolbar */}
+            {candidateSkills.length > 0 && (
+              <div className="pt-2 border-t border-slate-800/60">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-300">
+                    <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+                    <span>Filter by Analyzed Skills (from your resume):</span>
+                  </div>
+                  {selectedSkillFilter !== "ALL" && (
+                    <button
+                      onClick={() => setSelectedSkillFilter("ALL")}
+                      className="text-[11px] text-blue-400 hover:underline flex items-center gap-1"
+                    >
+                      <span>Show All Skills</span>
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <button
+                    onClick={() => setSelectedSkillFilter("ALL")}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                      selectedSkillFilter === "ALL"
+                        ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
+                        : "bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800"
+                    }`}
+                  >
+                    All Skills ({allJobs.length})
+                  </button>
+                  {candidateSkills.map((skill) => {
+                    const count = skillCounts[skill] || 0;
+                    const isSelected = selectedSkillFilter.toLowerCase() === skill.toLowerCase();
+                    return (
+                      <button
+                        key={skill}
+                        onClick={() => setSelectedSkillFilter(isSelected ? "ALL" : skill)}
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${
+                          isSelected
+                            ? "bg-blue-600 text-white font-bold shadow-md shadow-blue-500/30 scale-102"
+                            : "bg-slate-950 hover:bg-slate-850 hover:border-blue-500/40 text-slate-300 border border-slate-800"
+                        }`}
+                      >
+                        <span>{skill}</span>
+                        <span
+                          className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+                            isSelected ? "bg-white/20 text-white font-bold" : "bg-slate-800 text-slate-400"
+                          }`}
+                        >
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Standard Filters Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 pt-2 border-t border-slate-800/60">
               {/* Date Posted */}
               <div>
                 <label className="block text-[11px] font-medium text-slate-400 mb-1 flex items-center gap-1">
@@ -606,7 +786,14 @@ export default function AnalyzePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {filteredCompanies.length > 0 ? (
                 filteredCompanies.map((company) => (
-                  <CompanyCard key={company.company} company={company} />
+                  <CompanyCard
+                    key={company.company}
+                    company={company}
+                    onSelectSimilarCompany={(simName) => {
+                      setSearchQuery(simName);
+                      setActiveTab("companies");
+                    }}
+                  />
                 ))
               ) : (
                 <div className="col-span-2 text-center py-12 rounded-2xl bg-slate-900/40 border border-slate-800 text-slate-400">

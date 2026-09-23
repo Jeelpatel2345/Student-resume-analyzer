@@ -7,6 +7,8 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const country = searchParams.get("country") || "ALL";
+    const locationQuery = searchParams.get("location") || searchParams.get("locationQuery") || "ALL";
+    const selectedSkill = searchParams.get("skill") || searchParams.get("selectedSkill") || "ALL";
     const workType = searchParams.get("workType") || "ALL";
     const employmentType = searchParams.get("employmentType") || "ALL";
     const experienceLevel = searchParams.get("experienceLevel") || "ALL";
@@ -20,6 +22,8 @@ export async function GET(req: NextRequest) {
 
     const jobs = await matchJobsForResume(skills, {
       country,
+      locationQuery,
+      selectedSkill,
       workType,
       employmentType,
       experienceLevel,
